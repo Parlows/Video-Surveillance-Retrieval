@@ -1,0 +1,7 @@
+./docker-ucf
+./embedding-ddbb
+./utils
+./node-server/.env
+./node-server/rebuild.sh
+./embedding-server/rebuild.sh
+node-server/rebuild.sh
