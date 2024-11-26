@@ -14,8 +14,6 @@ COPY warmup.py /app
 
 COPY . /app
 
-RUN rm rebuild.sh
-
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=development
 ENV FLASK_RUN_PORT=1809
