@@ -4,7 +4,7 @@ FROM node:18-alpine
 WORKDIR /usr/src/app
 
 # Copy package.json
-COPY package.json ./
+#COPY package.json ./
 
 # Install the dependencies
 RUN npm install express
@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the server
-CMD [ "npm", "start" ]
+CMD [ "node", "app.js" ]
