@@ -22,6 +22,6 @@ app.use('/video', streaming)
 
 // Set up the server
 app.listen(process.env.NODE_PORT, () => {
-    console.log('Server running in port 3000')
+    console.log(`Server running in port ${process.env.NODE_PORT}`)
 });
 
