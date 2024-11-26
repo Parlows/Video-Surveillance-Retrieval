@@ -1,0 +1,122 @@
+body {
+  font-family: "Lato", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+#searchDiv {
+  text-align:center;
+  width:80%;
+}
+
+#searchBar {
+  width: 70%;
+  padding: 1%;
+  font-size: 1em;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+}
+
+#searchButton {
+  background-color: rgb(80, 80, 165);
+  color: white;
+  transition: background-color 0.3s ease;
+  padding: 1%;
+  font-size: 1em;
+  margin-left: 1%;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#searchButton:hover {
+  background-color: rgb(110, 110, 139);;
+}
+
+.title {
+  margin-top: 2.5%;
+  text-align:center;
+}
+
+.image-container {
+  margin-top: 10%;
+  text-align: center;
+  background-color: #ccc;
+  padding: 10px;
+}
+
+.image-container img {
+  margin: 0 10px; 
+  width: 15%;
+  height: auto;
+}
+
+/* Ensure the parent container takes full space */
+.results {
+  margin-top: 10%;
+  display: flex;
+  flex-direction: column; /* Stack entries vertically */
+  width: 80%; /* Ensure the entries take up full width */
+}
+
+.error-message {
+  color: red;            /* Red text color */
+  font-weight: bold;     /* Bold text */
+  font-size: 1.5em;      /* Large font size (adjust as needed) */
+  text-align: center;    /* Center-align the text horizontally */
+  margin-top: 20px;      /* Add space above the error message */
+}
+
+/* Flex container for individual entries (video + text) */
+.entry {
+  display: flex;
+  justify-content: flex-start; /* Align video and text horizontally */
+  align-items: center;
+  margin-bottom: 5%; /* Space between entries */
+  width: 100%; /* Make each entry take full width */
+  max-width: 800px; /* Optional: Set a max-width for each entry */
+}
+
+/* Style for the video element */
+.videoPlayer {
+  width: 400px; /* Adjust the width of the video */
+  height: auto;
+  margin-right: 20px; /* Space between video and text */
+}
+
+/* Style for the text beside the video */
+.video-info {
+  font-size: 18px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column; /* Ensure text appears in two lines */
+}
+
+.video-info p {
+  margin: 0;
+  padding: 0;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;      /* Centers vertically */
+  height: 100vh;            /* Takes full viewport height */
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

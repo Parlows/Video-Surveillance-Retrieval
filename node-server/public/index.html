@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GAPS - CCTV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="icon" href="res/favicon.png" type="image/x-icon">
+    <script type = "text/javascript" src="js/queryClient.js"></script>
+  </head>
+  <body>
+    <div class="title"><h1>GAPS - CCTV</h1></div>
+
+    <div id="searchDiv">
+      <input id="searchBar" type="text" name="query" placeholder="Introduce search text..." required>
+      <button id="searchButton" type="submit" onclick="querySearch();">Search</button>
+      <script>
+        document.getElementById('searchBar').addEventListener('keydown', function(event) {
+          if (event.key === 'Enter') {
+            querySearch(); // Call the querySearch function
+          }
+        });
+      </script>
+    </div>
+
+    <div class="selection"><p>
+      <label for="Encoder">Choose an Encoder Engine</label>
+      <select name="Encoder" id="encoder" multiple>
+        <option value="CLIP Centroid">CLIP Centroid</option>
+        <option value="VCLIP Centroid">VCLIP Centroid</option>
+      </select>
+    </p></div>
+
+      <div class="results" id="results">
+      </div>
+    
+    <div class="image-container">
+      <img src="res/upmlogo.png" alt="Image 1">
+      <img src="res/gapslogo.png" alt="Image 2">
+    </div>
+  </body>
+</html>
