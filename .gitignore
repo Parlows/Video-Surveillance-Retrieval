@@ -1,7 +1,9 @@
-./docker-ucf
-./embedding-ddbb
-./utils
-./node-server/.env
-./node-server/rebuild.sh
-./embedding-server/rebuild.sh
+docker-ucf
+embedding-ddbb
+utils
+node-server/.env
+embedding-server/rebuild.sh
+**/__pycache__
 node-server/rebuild.sh
+node-server/node_modules
+.env
