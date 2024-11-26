@@ -1,4 +1,4 @@
-# Video-Surveillance-Retrieval
+# Video Surveillance Retrieval
 
 This is the code used for my Master Thesis of the [MSc in Telecommunication Engineering](https://www.etsit.upm.es/de/studies/master-of-science-in-telecommunication-engineering.html).
 
