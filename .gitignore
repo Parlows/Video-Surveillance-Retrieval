@@ -7,3 +7,4 @@ embedding-server/rebuild.sh
 node-server/rebuild.sh
 node-server/node_modules
 .env
+embedding-server/encoders_old
