@@ -3,6 +3,7 @@ embedding-ddbb
 utils
 node-server/.env
 embedding-server/rebuild.sh
+embedding-server/rebuild-test.sh
 **/__pycache__
 node-server/rebuild.sh
 node-server/node_modules
