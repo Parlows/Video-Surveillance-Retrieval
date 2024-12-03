@@ -4,10 +4,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
-COPY ./vclip /app/vclip
+# COPY ./encoders /app/encoders
 
 COPY warmup.py /app
-# RUN python warmup.py
+RUN python warmup.py
 
 # TO-BE-REMOVED
 # Installation of dependencies
@@ -19,7 +19,7 @@ ENV FLASK_ENV=development
 ENV FLASK_RUN_PORT=1809
 ENV FLASK_RUN_HOST=0.0.0.0
 
-#RUN python warmup.py
+# RUN python warmup.py
 
 EXPOSE 1809
 
