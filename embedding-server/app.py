@@ -1,4 +1,6 @@
-from flask import Flask, request
+from flask import Flask, request # type: ignore
+import numpy as np # type: ignore
+# import cv2
 
 import base64
 from PIL import Image
@@ -56,8 +58,13 @@ def get_image():
     
     # Get and decode requested image
     img_b64 = request.json['data']
+    # image_data = np.frombuffer(base64.b64decode(img_b64), dtype=np.uint8)
+    # img = cv2.imdecode(image_data, flags=1)
     image_data = base64.b64decode(img_b64)
     img = Image.open(BytesIO(image_data))
+    # img.save('/weights/img.png')
+    img = np.array(img)
+    # print(img)
     
     try:
         # Build the selected model
