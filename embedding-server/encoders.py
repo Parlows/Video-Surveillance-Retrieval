@@ -5,7 +5,9 @@ import torch
 from yacs.config import CfgNode as CN
 
 # Usual CLIP
-from transformers import CLIPModel, AutoProcessor
+# from transformers import CLIPModel, AutoProcessor
+from clip import clip
+
 
 # Modified CLIP
 from vclip import vclip
@@ -93,7 +95,7 @@ class EncoderBuilder:
 
 class CLIP(EmbeddingModel):
 
-    def __init__(self, model_name:str='openai/clip-vit-large-patch14'):
+    def __init__(self, model_name:str='openai/clip-vit-base-patch32'):
         """Uses HuggingFace's CLIP model to obtain the embeddings of the clips.
 
         Parameters
@@ -107,11 +109,10 @@ class CLIP(EmbeddingModel):
     def load(self):
         try:
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            # Had to use this for memory issues
-            #self.device = 'cpu'
-            self.model = CLIPModel.from_pretrained(self.model_name)
-            self.model.to(self.device)
-            self.processor = AutoProcessor.from_pretrained(self.model_name)
+            self.model, self.processor = clip.load('ViT-B/32', device=self.device)
+            # self.model = CLIPModel.from_pretrained(self.model_name)
+            # self.model.to(self.device)
+            # self.processor = AutoProcessor.from_pretrained(self.model_name)
         except OSError as e:
             print(f'OSError: Model \'{self.model_name}\' not listed in HuggingFace repository. {e}')
 
@@ -123,16 +124,18 @@ class CLIP(EmbeddingModel):
         return image_features.cpu().detach().numpy()
 
     def encode_text(self, text):
-        inputs = self.processor(text=text, return_tensors='pt').to(self.device)
+        tokenized_text = clip.tokenize(text).to(self.device)
+        # inputs = self.processor(text=text, return_tensors='pt').to(self.device)
 
-        text_features = self.model.get_text_features(**inputs)
+        text_features = self.model.encode_text(tokenized_text)
+        # print(f'Text features: {text_features}')
 
         return text_features.cpu().detach().numpy()
 
     def get_encoder_params(self) -> dict:
         params = {
             'model_name': 'clip',
-            'embedding_size': 768,
+            'embedding_size': 512,
             'embedding_list': True
         }
         return params
