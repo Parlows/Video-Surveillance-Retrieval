@@ -1,0 +1,7 @@
+NODE_PORT=# NodeJS server listening port #
+EMB_ENGINE_HOST=embedding-server
+EMB_ENGINE_PORT=# Embedding engine listening port #
+MILVUS_HOST=milvus-standalone
+MILVUS_PORT=# Milvus listening port #
+QDRANT_HOST=qdrant
+QDRANT_PORT=# QDrant listening port #

@@ -1,0 +1,7 @@
+NODEJS_PORT=# NodeJS server listening port #
+UCF_VIDEOS_PATH=# Path to UCF Videos #
+EMB_ENGINE_PORT=# Embedding engine listening port #
+VCLIP_WEIGHTS_PATH=# Path to VCLIP Weights #
+MILVUS_DATA_PATH=# Path to Milvus data #
+QDRANT_DATA_PATH=# Path to QDrant data #
+
