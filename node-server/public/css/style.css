@@ -120,3 +120,30 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.selection-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1%; /* Added top margin for more spacing */
+  width: 30%; /* Use full width */
+  max-width: 100%; /* Optional: limits maximum width of the container */
+  padding-left: 10%;  /* Added padding to left side */
+  padding-right: 10%; /* Added padding to right side */
+}
+
+.selection {
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 20px;  /* Increased font size */
+  font-weight: bold;
+  line-height: 1.5;  /* Optional: Adjust line height for better spacing */
+}
+
+select {
+  padding: 8px;
+  font-size: 16px;
+}

@@ -22,14 +22,38 @@
       </script>
     </div>
 
-    <div class="selection"><p>
+    <!-- <div class="selection"><p>
       <label for="Encoder">Choose an Encoder Engine</label>
       <select name="Encoder" id="encoder" multiple>
         <option value="CLIP Centroid">CLIP Centroid</option>
         <option value="VCLIP Centroid">VCLIP Centroid</option>
       </select>
-    </p></div>
+    </p></div> -->
 
+
+    <div class="selection-container">
+      <div class="selection">
+          <label for="encoder">Choose an Encoder:</label>
+          <select id="encoder" multiple>
+              <option value="clip">CLIP</option>
+              <option value="vclip">VCLIP</option>
+          </select>
+      </div>
+      <div class="selection">
+          <label for="dataset">Choose a dataset:</label>
+          <select id="dataset" multiple>
+              <option value="centroid">UCA-UCF</option>
+              <option value="frames">UCF</option>
+          </select>
+      </div>
+      <div class="selection">
+          <label for="database">Choose a database:</label>
+          <select id="database" multiple>
+              <option value="milvus">Milvus</option>
+              <option value="qdrant">QDrant</option>
+          </select>
+      </div>
+  </div>
       <div class="results" id="results">
       </div>
     

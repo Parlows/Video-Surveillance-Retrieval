@@ -24,13 +24,19 @@ function querySearch() {
 
         // Get encoder
         let encoderName = document.getElementById('encoder').value;
+        let datasetName = document.getElementById('dataset').value;
+        let databaseName = document.getElementById('database').value;
 
         if(!encoderName) {
             throw new Error('Please select an encoder');
+        } else if(!datasetName) {
+            throw new Error('Please select a dataset');
+        } else if(!databaseName) {
+            throw new Error('Please select a database');
         }
 
         // Url
-        url = `http://localhost:3000/query/milvus?text=${queryText}&encoder=${encoderName}`
+        url = `http://localhost:3000/query/${databaseName}?text=${queryText}&encoder=${encoderName}&dataset=${datasetName}`
 
         fetch(url)
             .then(response => {
