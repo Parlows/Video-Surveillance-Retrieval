@@ -19,32 +19,40 @@ router.get('/qdrant', (req, res) => {
 
     const textQuery = req.query.text; // Get text to query
     const encoderQuery = req.query.encoder; // Get encoder to build the embedding
+    const datasetQuery = req.query.dataset; // Get the dataset to query the database
 
-    // Choose options depending on the encoder selected by client
-    let encoderName = ''
-    let collectionName = ''
-    // console.log(`Encoder sent by client: ${encoderQuery}`)
-    switch (String(encoderQuery)) {
-        case 'CLIP Centroid':
-            encoderName = 'clip';
-            collectionName = 'ucfclipcentroid'
-            break;
-        case 'VCLIP Centroid':
-            encoderName = 'vclip';
-            collectionName = 'ucfvclipcentroid'
-            break;
-        default:
-            res.status(404).send(`Encoder "${encoderQuery}" not found`)
-    }
-    
+    // // Choose options depending on the encoder selected by client
+    // let encoderName = ''
+    // let collectionName = ''
+    // // console.log(`Encoder sent by client: ${encoderQuery}`)
+    // switch (String(encoderQuery)) {
+    //     case 'CLIP Centroid':
+    //         encoderName = 'clip';
+    //         collectionName = 'ucfclipcentroid'
+    //         break;
+    //     case 'VCLIP Centroid':
+    //         encoderName = 'vclip';
+    //         collectionName = 'ucfvclipcentroid'
+    //         break;
+    //     case 'CLIP Frames':
+    //         encoderName = 'clip';
+    //         collectionName = 'ucfclipframes';
+    //     default:
+    //         res.status(404).send(`Encoder "${encoderQuery}" not found`)
+    // }
+
     // If URL is wrong
     if(!textQuery || !encoderQuery) {
         return res.status(400);
     };
+    
+    let encoderName = encoderQuery;
+    let collectionName = 'ucf'+encoderQuery+datasetQuery;
+    console.log(collectionName)
 
     // Get embedding
     embUrl = `http://${process.env.EMB_ENGINE_HOST}:${process.env.EMB_ENGINE_PORT}` +
-        `/text?text=${textQuery}`;
+        `/text`;
 
     // POST request body
     const embData = JSON.stringify({
@@ -81,57 +89,81 @@ router.get('/qdrant', (req, res) => {
                 let emb = embJSON
                 // console.log(emb)
                     // Data to be sent in the POST request body
-                    const postData = JSON.stringify({
-                        vector: JSON.parse(emb),
-                        limit: 10,
-                        with_payload: ["start_frame", "end_frame", "video", "sentence"]
+                let outputFields;
+                if(collectionName.endsWith('centroid'))
+                    outputFields = ['video', 'start_frame', 'end_frame'];
+                else if(collectionName.endsWith('frames'))
+                    outputFields = ['video', 'frame_n']
+                const postData = JSON.stringify({
+                    query: JSON.parse(emb)[0],
+                    limit: 10,
+                    with_payload: outputFields
+                });
+                
+                // Options for the POST request
+                const options = {
+                    hostname: process.env.QDRANT_HOST,
+                    port: process.env.QDRANT_PORT,
+                    path: `/collections/${collectionName}/points/query`,
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(postData)
+                    }
+                };
+                
+                const databaseReq = http.request(options, databaseRes => {
+                    let databaseData = '';
+
+                    // Collect data chunks as they arrive
+                    databaseRes.on('data', (chunk) => {
+                        databaseData += chunk;
                     });
                 
-                    // Options for the POST request
-                    const options = {
-                        hostname: process.env.QDRANT_HOST,
-                        port: process.env.QDRANT_PORT,
-                        path: `/collections/${collectionName}/points/query`,
-                        method: 'POST',
-                        headers: {
-                        'Content-Type': 'application/json',
-                        'Content-Length': Buffer.byteLength(postData)
-                        }
-                    };
-                
-                    const databaseReq = http.request(options, databaseRes => {
-                        let databaseData = '';
+                    // Process the complete response once all chunks are received
+                    databaseRes.on('end', () => {
+                    try {
+                        const results = JSON.parse(databaseData).result;
 
-                        // Collect data chunks as they arrive
-                        databaseRes.on('data', (chunk) => {
-                            databaseData += chunk;
-                        });
-                    
-                        // Process the complete response once all chunks are received
-                        databaseRes.on('end', () => {
-                        try {
-                            const results = JSON.parse(databaseData);
-
-                            resultsArray = []
-                            
-                            results.result.points.forEach(element => {
-                                // console.log('Hola')
+                        let resultsArray = []
+                        
+                        // console.log(`Building response ${collectionName.endsWith('frames')}`)
+                        if(collectionName.endsWith('centroid')) {
+                            results.points.forEach(element => {
                                 resultsArray.push({
                                     video: element.payload.video,
                                     start_frame: element.payload.start_frame,
                                     end_frame: element.payload.end_frame,
-                                    sentence: element.payload.sentence
                                 })
                             });
+                        } else if(collectionName.endsWith('frames')) {
+                            // console.log("Looping results")
+                            try {
+                                results.points.forEach(element => {
 
-                            const clientRes = {results: resultsArray}
-
-                            res.json(clientRes);
-                        } catch (error) {
-                            res.status(500)
+                                    let start_frame = (element.payload.frame_n < 75) ? 0 : (element.payload.frame_n - 75);
+                                    let end_frame = element.payload.frame_n + 75; // If not valid, streaming route fix it
+                                    // console.log(`Start: ${start_frame}`)
+                                    // console.log(`End: ${end_frame}`)
+                                    resultsArray.push({
+                                        video: element.payload.video,
+                                        start_frame: start_frame,
+                                        end_frame: end_frame,
+                                    })
+                                });
+                            } catch (error) {
+                                console.log(error)
+                            }
                         }
-                        });
+                        console.log("Response built")
+                        const clientRes = {results: resultsArray}
+
+                        res.json(clientRes);
+                    } catch (error) {
+                        res.status(500)
+                    }
                     });
+                });
 
                     // Handle errors in the QDrant request
                     databaseReq.on('error', (e) => {
@@ -257,28 +289,36 @@ router.get('/milvus', (req, res) => {
 
     const textQuery = req.query.text; // Get text to query
     const encoderQuery = req.query.encoder; // Get encoder to build the embedding
+    const datasetQuery = req.query.dataset; // Get the dataset to query the database
 
-    // Choose options depending on the encoder selected by client
-    let encoderName = ''
-    let collectionName = ''
-    // console.log(`Encoder sent by client: ${encoderQuery}`)
-    switch (String(encoderQuery)) {
-        case 'CLIP Centroid':
-            encoderName = 'clip';
-            collectionName = 'ucfclipcentroid'
-            break;
-        case 'VCLIP Centroid':
-            encoderName = 'vclip';
-            collectionName = 'ucfvclipcentroid'
-            break;
-        default:
-            res.status(404).send(`Encoder "${encoderQuery}" not found`)
-    }
-    
+    // // Choose options depending on the encoder selected by client
+    // let encoderName = ''
+    // let collectionName = ''
+    // // console.log(`Encoder sent by client: ${encoderQuery}`)
+    // switch (String(encoderQuery)) {
+    //     case 'CLIP Centroid':
+    //         encoderName = 'clip';
+    //         collectionName = 'ucfclipcentroid'
+    //         break;
+    //     case 'VCLIP Centroid':
+    //         encoderName = 'vclip';
+    //         collectionName = 'ucfvclipcentroid'
+    //         break;
+    //     case 'CLIP Frames':
+    //         encoderName = 'clip';
+    //         collectionName = 'ucfclipframes';
+    //     default:
+    //         res.status(404).send(`Encoder "${encoderQuery}" not found`)
+    // }
+
     // If URL is wrong
     if(!textQuery || !encoderQuery) {
         return res.status(400);
     };
+    
+    let encoderName = encoderQuery;
+    let collectionName = 'ucf'+encoderQuery+datasetQuery;
+    console.log(collectionName)
 
     // Get embedding
     embUrl = `http://${process.env.EMB_ENGINE_HOST}:${process.env.EMB_ENGINE_PORT}` +
@@ -335,17 +375,26 @@ router.get('/milvus', (req, res) => {
                 // console.log("Sending embedding")
                 let emb = embJSON
                 console.log("Embedding recieved!")
-                // console.log(emb)
+                console.log(JSON.parse(emb))
 
                 // Data to be sent in the POST request to Milvus
+                console.log("output fileds")
+                let outputFields;
+                if(collectionName.endsWith('centroid'))
+                    outputFields = ['video', 'start_frame', 'end_frame'];
+                else if(collectionName.endsWith('frames'))
+                    outputFields = ['video', 'frame_n']
+
+                console.log("Constructing post data")
                 const postData = JSON.stringify({
                     collectionName: collectionName,
-                    outputFields: ['video', 'start_frame', 'end_frame', 'sentence'],
+                    outputFields: outputFields,
                     limit: 10,
                     offset: 0,
                     data: JSON.parse(emb)
                 });
             
+                console.log("Constructing options")
                 // Options for the POST request to Milvus
                 const options = {
                     hostname: process.env.MILVUS_HOST,
@@ -359,8 +408,6 @@ router.get('/milvus', (req, res) => {
                     }
                 };
             
-                console.log("Sending embedding to database as query...");
-                console.log(`Collection name: ${collectionName}`);
                 // Define callback for when request is sent
                 const databaseReq = http.request(options, databaseRes => {
                     let databaseData = '';
@@ -373,19 +420,33 @@ router.get('/milvus', (req, res) => {
                     // Process the complete response once all chunks are received
                     databaseRes.on('end', () => {
                     try {
+
                         // console.log('Processing Milvus Response..')
                         const results = JSON.parse(databaseData);
                         // console.log(results);
                         resultsArray = []
                         
-                        results.data.forEach(element => {
-                            resultsArray.push({
-                                video: element.video,
-                                start_frame: element.start_frame,
-                                end_frame: element.end_frame,
-                                sentence: element.sentence
-                            })
-                        });
+                        if(collectionName.endsWith('centroid')) {
+                            results.data.forEach(element => {
+                                resultsArray.push({
+                                    video: element.video,
+                                    start_frame: element.start_frame,
+                                    end_frame: element.end_frame,
+                                })
+                            });
+                        } else if(collectionName.endsWith('frames')) {
+                            results.data.forEach(element => {
+
+                                let start_frame = (frame_n < 75) ? 0 : (element.frame_n - 75);
+                                let end_frame = frame_n + 75; // If not valid, streaming route fix it
+
+                                resultsArray.push({
+                                    video: element.video,
+                                    start_frame: start_frame,
+                                    end_frame: end_frame,
+                                })
+                            });
+                        }
 
                         const clientRes = {results: resultsArray}
 

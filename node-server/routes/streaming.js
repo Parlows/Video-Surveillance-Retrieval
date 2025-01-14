@@ -34,11 +34,25 @@ const getVideoFrameRate = (videoPath) => {
     });
 };
 
+// Gets video duration in frames
+const getVideoLength = (videoPath) => {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(videoPath, (err, metadata) => {
+            if (err) {
+                reject(err);
+            } else {
+                const videoLength = eval(metadata.streams[0].duration_ts); // Extract video length
+                resolve(videoLength);
+            }
+        });
+    });
+};
+
 app.get('/', async (req, res) => {
 
     const { name, startFrame, endFrame } = req.query;
 
-    const videoPath = path.join(videoDirectory, name+'.mp4');
+    const videoPath = path.join(videoDirectory, (name.endsWith('.mp4'))? name : name+'.mp4');
 
     // Check if video exists
     if (!fs.existsSync(videoPath)) {
@@ -46,11 +60,15 @@ app.get('/', async (req, res) => {
     }
 
     const startFrameNumber = parseInt(startFrame);
-    const endFrameNumber = parseInt(endFrame);
+    let endFrameNumber = parseInt(endFrame);
 
     if (isNaN(startFrameNumber) || isNaN(endFrameNumber) || startFrameNumber >= endFrameNumber) {
         return res.status(400).send('Invalid startFrame or endFrame parameters');
     }
+
+    const videoLength = await getVideoLength(videoPath);
+
+    endFrameNumber = (endFrameNumber > videoLength) ? videoLength : endFrameNumber
 
     try {
         // Get the video frame rate
