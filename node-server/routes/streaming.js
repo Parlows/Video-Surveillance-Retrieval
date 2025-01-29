@@ -53,13 +53,13 @@ app.get('/', async (req, res) => {
     const { name, startFrame, endFrame } = req.query;
 
     const videoPath = path.join(videoDirectory, (name.endsWith('.mp4'))? name : name+'.mp4');
-
+    console.log(videoPath)
     // Check if video exists
     if (!fs.existsSync(videoPath)) {
         return res.status(404).send('Video not found');
     }
 
-    const startFrameNumber = parseInt(startFrame);
+    let startFrameNumber = parseInt(startFrame);
     let endFrameNumber = parseInt(endFrame);
 
     if (isNaN(startFrameNumber) || isNaN(endFrameNumber) || startFrameNumber >= endFrameNumber) {
@@ -68,7 +68,8 @@ app.get('/', async (req, res) => {
 
     const videoLength = await getVideoLength(videoPath);
 
-    endFrameNumber = (endFrameNumber > videoLength) ? videoLength : endFrameNumber
+    startFrameNumber = (startFrameNumber < 0) ? 0 : startFrameNumber;
+    endFrameNumber = (endFrameNumber > videoLength) ? videoLength : endFrameNumber;
 
     try {
         // Get the video frame rate
