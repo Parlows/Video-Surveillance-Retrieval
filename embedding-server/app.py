@@ -25,6 +25,7 @@ def check_request(req):
 @app.route('/text', methods=['POST'])
 def get_text():
 
+    # Check if request includes all the necessary data
     if (not check_request(request.json)):
         return "Bad request", 400
 
