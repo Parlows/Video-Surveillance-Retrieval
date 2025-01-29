@@ -6,8 +6,8 @@ RUN python -m pip install -r requirements.txt
 
 # COPY ./encoders /app/encoders
 
-COPY warmup.py /app
-RUN python warmup.py
+# COPY warmup.py /app
+# RUN python warmup.py
 
 # TO-BE-REMOVED
 # Installation of dependencies
