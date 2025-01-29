@@ -70,7 +70,6 @@ function printVideos(videosJson) {
     videosJson.results.forEach(element => {
 
         // Extract info
-        //let video_name = element.video;
         let start_frame = element.start_frame;
         let end_frame = element.end_frame;
         let video_name = element.video;
@@ -97,15 +96,15 @@ function printVideos(videosJson) {
 
         // Create camera name paragraph
         const cameraInfo = document.createElement('p');
-        cameraInfo.textContent = `Camera: ${video_name}`;
+        cameraInfo.textContent = `Video: ${video_name}`;
 
-        // Create date paragraph
-        const dateInfo = document.createElement('p');
-        dateInfo.textContent = `Date: ${element.sentence}`;
+        // // Create date paragraph
+        // const dateInfo = document.createElement('p');
+        // dateInfo.textContent = `Date: ${element.sentence}`;
 
         // Append paragraphs to videoInfoDiv
         videoInfoDiv.appendChild(cameraInfo);
-        videoInfoDiv.appendChild(dateInfo);
+        // videoInfoDiv.appendChild(dateInfo);
 
         // Create the horizontal line (hr)
         const hrElement = document.createElement('hr');
