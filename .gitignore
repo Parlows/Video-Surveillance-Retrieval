@@ -9,3 +9,4 @@ node-server/rebuild.sh
 node-server/node_modules
 .env
 embedding-server/encoders_old
+embedding-server/clip/model/ViT-B-32.pt
