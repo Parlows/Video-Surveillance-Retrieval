@@ -11,6 +11,7 @@ RUN npm install express
 RUN npm install fs path dotenv
 RUN npm install fluent-ffmpeg ffmpeg-static
 RUN npm install @ffprobe-installer/ffprobe
+RUN npm install @zilliz/milvus2-sdk-node@2.4.10
 
 
 # Copy the app
@@ -21,3 +22,4 @@ EXPOSE 3000
 
 # Start the server
 CMD [ "node", "app.js" ]
+# CMD ["ls"]
