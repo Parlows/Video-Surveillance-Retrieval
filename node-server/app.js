@@ -13,12 +13,18 @@ const app = express();
 app.use(express.static('public'));
 
 // Add routes to query database
-const queryRouter = require('./routes/query.js')
-app.use('/query', queryRouter);
+const qdrant = require('./routes/qdrant.js')
+app.use('/query', qdrant);
+
+const milvus = require('./routes/milvus.js')
+app.use('/query', milvus)
 
 // Add routes to send videos
 const streaming = require('./routes/streaming.js')
 app.use('/video', streaming)
+
+// const test = require('./routes/milvus.js')
+// app.use('/', test)
 
 // Set up the server
 app.listen(process.env.NODE_PORT, () => {
