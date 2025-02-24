@@ -9,6 +9,7 @@ services:
             - ${NODEJS_PORT}:${NODEJS_PORT}
         volumes:
             - ${UCF_VIDEOS_PATH}:/videos
+            - ${LOGGING_TIMES_PATH}:/logs
         depends_on:
             - embedding-server
 
@@ -18,8 +19,8 @@ services:
             context: ./embedding-server
         ports:
             - ${EMB_ENGINE_PORT}:${EMB_ENGINE_PORT}
-        volumes:
-            - ${VCLIP_WEIGHTS_PATH}:/weights
+        # volumes:
+            # - ${VCLIP_WEIGHTS_PATH}:/weights
         deploy:
             resources:
                 reservations:
