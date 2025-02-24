@@ -2,6 +2,7 @@
 const express = require('express');
 const http = require('http');
 
+
 // Instantiate router object
 const router = express.Router();
 
@@ -10,6 +11,18 @@ const { MilvusClient, DataType } = require('@zilliz/milvus2-sdk-node'); // Ensur
 // Add .env params
 const dotenv = require('dotenv');
 dotenv.config();
+
+// To log execution times
+const fs = require('fs');
+const path = require('path');
+
+function log_times(time, category) {
+    const logFile = path.join('/logs', category+'_times.log');
+
+    fs.appendFile(logFile, `${time}\n`, (err) => {
+        if (err) console.log('Error with logging', err);
+    })
+}
 
 router.get('/milvus', (req, res) => {
 
@@ -55,6 +68,10 @@ router.get('/milvus', (req, res) => {
     };
 
     // console.log('Sending req to embedding engine');
+
+    // Uncomment to log times
+    // const startEmb = Date.now();
+
     // Define callback for when the request is sent
     const embRequest = http.request(embOptions, embRes => {
         let embJSON = '';
@@ -84,6 +101,11 @@ router.get('/milvus', (req, res) => {
         // Callback for when data has been recieved
         embRes.on('end', async () => {
             try {
+
+                // Uncomment to log times
+                const endEmb = Date.now();
+                log_times(endEmb-startEmb, 'emb');
+
                 // console.log("Sending embedding")
                 let emb = JSON.parse(embJSON)
                 console.log("Embedding recieved!")
@@ -94,6 +116,9 @@ router.get('/milvus', (req, res) => {
                     outputFields = ['video', 'start_frame', 'end_frame'];
                 else if(collectionName.endsWith('frames'))
                     outputFields = ['video', 'frame_n']
+
+                // Uncomment to log times
+                // const startQuer = Date.now();
 
                 const address = `http://${process.env.MILVUS_HOST}:${process.env.MILVUS_PORT}`;
                 const token = "root:Milvus";
@@ -121,8 +146,13 @@ router.get('/milvus', (req, res) => {
                 // console.log(results);
                 resultsArray = []
                 
+
+                // Uncomment to log times
+                // const endQuer = Date.now();
+                //log_times(endQuer-startQuer, 'query_milvus')
+                
                 console.log('Database queried')
-                console.log(databaseData)
+                // console.log(databaseData)
                 if(collectionName.endsWith('centroid')) {
                     databaseData.results.forEach(element => {
                         resultsArray.push({

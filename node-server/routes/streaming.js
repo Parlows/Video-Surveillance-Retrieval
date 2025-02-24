@@ -18,6 +18,16 @@ ffmpeg.setFfprobePath(ffprobe.path);  // Set ffprobe path
 // Videos directory (inside the container)
 const videoDirectory = '/videos'
 
+// To log execution time
+function log_times(time, category) {
+    const logFile = path.join('/logs', category+'_times.log');
+
+    fs.appendFile(logFile, `${time}\n`, (err) => {
+        if (err) console.log('Error with logging', err);
+    })
+}
+
+
 const app = express.Router();
 
 // Gets video frame rate
@@ -79,6 +89,9 @@ app.get('/', async (req, res) => {
         const startSeconds = startFrameNumber / frameRate;
         const endSeconds = endFrameNumber / frameRate;
 
+        // Uncomment to log times
+        // const startTrim = Date.now()
+
         // Use ffmpeg to trim and stream the video
         ffmpeg(videoPath)
             .setStartTime(startSeconds)
@@ -89,6 +102,11 @@ app.get('/', async (req, res) => {
                 console.error('Error processing video:', err);
                 res.status(500).send('Error processing video');
             })
+            // Uncomment to log times
+            // .on('end', () => {
+            //     const endTrim = Date.now();
+            //     log_times(endTrim-startTrim, 'trim')
+            // })
             .pipe(res, { end: true });
 
     } catch (err) {

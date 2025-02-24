@@ -14,6 +14,17 @@ const http = require('http');
 
 //const got = require('got');
 
+// To log execution times
+const fs = require('fs');
+const path = require('path');
+
+function log_times(time, category) {
+    const logFile = path.join('/logs', category+'_times.log');
+
+    fs.appendFile(logFile, `${time}\n`, (err) => {
+        if (err) console.log('Error with logging', err);
+    })
+}
 
 // To query QDrant Database
 router.get('/qdrant', (req, res) => {
@@ -57,6 +68,9 @@ router.get('/qdrant', (req, res) => {
     }
     console.log(collectionName)
 
+    // Uncomment to log times
+    //const startEmb = Date.now();
+
     // Get embedding
     embUrl = `http://${process.env.EMB_ENGINE_HOST}:${process.env.EMB_ENGINE_PORT}` +
         `/text`;
@@ -91,6 +105,10 @@ router.get('/qdrant', (req, res) => {
 
         // Callback for when data has been recieved
         embRes.on('end', () => {
+            // Uncomment to log times
+            // const endEmb = Date.now();
+            // log_times(endEmb-startEmb, 'emb');
+
             try {
                 // console.log("Sending embedding")
                 let emb = embJSON
@@ -119,6 +137,9 @@ router.get('/qdrant', (req, res) => {
                     }
                 };
                 
+                // Uncomment to log times
+                // const startQuer = Date.now();
+
                 const databaseReq = http.request(options, databaseRes => {
                     let databaseData = '';
 
@@ -129,46 +150,51 @@ router.get('/qdrant', (req, res) => {
                 
                     // Process the complete response once all chunks are received
                     databaseRes.on('end', () => {
-                    try {
-                        const results = JSON.parse(databaseData).result;
 
-                        let resultsArray = []
-                        
-                        // console.log(`Building response ${collectionName.endsWith('frames')}`)
-                        if(collectionName.endsWith('centroid')) {
-                            results.points.forEach(element => {
-                                resultsArray.push({
-                                    video: element.payload.video,
-                                    start_frame: element.payload.start_frame,
-                                    end_frame: element.payload.end_frame,
-                                })
-                            });
-                        } else if(collectionName.endsWith('frames')) {
-                            // console.log("Looping results")
-                            try {
+                        // Uncomment to log times
+                        // const endQuer = Date.now();
+                        // log_times(endQuer-startQuer, 'query_qdrant');
+
+                        try {
+                            const results = JSON.parse(databaseData).result;
+
+                            let resultsArray = []
+                            
+                            // console.log(`Building response ${collectionName.endsWith('frames')}`)
+                            if(collectionName.endsWith('centroid')) {
                                 results.points.forEach(element => {
-
-                                    let start_frame = (element.payload.frame_n < 75) ? 0 : (element.payload.frame_n - 75);
-                                    let end_frame = element.payload.frame_n + 75; // If not valid, streaming route fix it
-                                    // console.log(`Start: ${start_frame}`)
-                                    // console.log(`End: ${end_frame}`)
                                     resultsArray.push({
                                         video: element.payload.video,
-                                        start_frame: start_frame,
-                                        end_frame: end_frame,
+                                        start_frame: element.payload.start_frame,
+                                        end_frame: element.payload.end_frame,
                                     })
                                 });
-                            } catch (error) {
-                                console.log(error)
-                            }
-                        }
-                        console.log("Response built")
-                        const clientRes = {results: resultsArray}
+                            } else if(collectionName.endsWith('frames')) {
+                                // console.log("Looping results")
+                                try {
+                                    results.points.forEach(element => {
 
-                        res.json(clientRes);
-                    } catch (error) {
-                        res.status(500)
-                    }
+                                        let start_frame = (element.payload.frame_n < 75) ? 0 : (element.payload.frame_n - 75);
+                                        let end_frame = element.payload.frame_n + 75; // If not valid, streaming route fix it
+                                        // console.log(`Start: ${start_frame}`)
+                                        // console.log(`End: ${end_frame}`)
+                                        resultsArray.push({
+                                            video: element.payload.video,
+                                            start_frame: start_frame,
+                                            end_frame: end_frame,
+                                        })
+                                    });
+                                } catch (error) {
+                                    console.log(error)
+                                }
+                            }
+                            console.log("Response built")
+                            const clientRes = {results: resultsArray}
+
+                            res.json(clientRes);
+                        } catch (error) {
+                            res.status(500)
+                        }
                     });
                 });
 
